@@ -14,9 +14,10 @@ end
 
 context "Two player are opponents of each other" do
   setup do
-    @first = Player.new 
+    @first  = Player.new 
     @second = Player.new
-    @first.opponent = @second
+
+    @first.opponent  = @second
     @second.opponent = @first
     @first
   end
@@ -24,10 +25,27 @@ context "Two player are opponents of each other" do
   asserts("second default elo rank of 1200") { @second.elo_rank}.equals(1200)  
   asserts("second is an opponent of first") { @first.opponent}.equals{@second}
   asserts("first is an opponent of second") { @second.opponent}.equals{@first}
+
   context "when first one wins" do
-    setup { @first.elo_win! }
-    asserts("first elo rank is updated") {@first.elo_rank}.equals(1300)
-    asserts("second elo rank is updated"){@second.elo_rank}.equals(1100)
+    setup do 
+      @first.elo_rank  = 1200
+      @second.elo_rank = 1200
+
+      @first.elo_win!
+    end
+    asserts("first elo rank is updated") {@first.elo_rank}.equals(1205)
+    asserts("second elo rank is updated"){@second.elo_rank}.equals(1195)
+  end
+
+  context "when first one wins" do
+    setup do
+      @first.elo_rank  = 1200
+      @second.elo_rank = 1200
+
+      @first.elo_lose!
+    end
+    asserts("first elo rank is updated") {@first.elo_rank}.equals(1195)
+    asserts("second elo rank is updated"){@second.elo_rank}.equals(1205)
   end
 end
 
@@ -37,6 +55,7 @@ class PlayerWithDefaultRank
   attr_reader :enemy
   acts_as_elo :opponent, :default_rank => 1300
 end
+
 context "Testing default for elo rank" do
   setup { PlayerWithDefaultRank.new }
   asserts(:elo_rank).equals(1300)
