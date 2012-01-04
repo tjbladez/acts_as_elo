@@ -22,7 +22,6 @@ context "Two players are opponents of each other" do
   }.equals([1200, 1200])
 
   context "when first one wins" do
-    $k = true
     hookup {topic.each {|pl| pl.elo_rank = 1200 }}
     hookup {topic.first.elo_win!}
     

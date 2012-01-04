@@ -8,7 +8,7 @@ class User
   
   attr_accessor :questions
   
-  acts_as_elo :one_way => true,
+  acts_as_elo :one_way => true
 end
 
 class Question

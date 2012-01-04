@@ -41,8 +41,8 @@ module Acts
           diff      = (source.elo_rank.to_f - elo_rank.to_f).abs
           expected  = 1 / (1 + 10 ** (diff / 400))
           send_opts = {one_way: true}
-          if self.class.respond_to?(:acts_as_elo_options)
-            send_opts.merge!(source: self) if self.class.acts_as_elo_options[:sender]          
+          if self.class.respond_to?(:acts_as_elo_options) && self.class.acts_as_elo_options[:sender]
+            send_opts.merge!(source: self)
           end
           
           source.elo_lose!(send_opts) unless opts[:one_way]
