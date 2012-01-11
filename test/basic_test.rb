@@ -1,7 +1,6 @@
 require 'pathname'
 require Pathname.new('.') + 'helper'
 
-
 class Player
   include Acts::Elo
   

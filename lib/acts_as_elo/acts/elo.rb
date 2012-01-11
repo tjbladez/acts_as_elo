@@ -35,39 +35,42 @@ module Acts
     
     module InstanceMethods
       def elo_win!(opts={})
-        begin
-          source    = opts[:source] || elo_opponent
-          one_way   = opts[:one_way]
-          diff      = (source.elo_rank.to_f - elo_rank.to_f).abs
-          expected  = 1 / (1 + 10 ** (diff / 400))
-          send_opts = {one_way: true}
-          if self.class.respond_to?(:acts_as_elo_options) && self.class.acts_as_elo_options[:sender]
-            send_opts.merge!(source: self)
-          end
-          
-          source.elo_lose!(send_opts) unless opts[:one_way]
-
-          @elo_rank = (elo_rank + 10*(1-expected)).round
-
-        rescue Exception => e
-          puts "Exception: #{e.message}"
-        end        
+        elo_update(opts.merge!(:result => :win))
       end
       
       def elo_lose!(opts={})
+        elo_update(opts.merge!(:result => :lose))
+      end
+      
+      def elo_draw!(opts={})
+        elo_update(opts.merge!(:result => :draw))
+      end
+      
+      def elo_update(opts={})
         begin
           source    = opts[:source] || elo_opponent
           diff      = (source.elo_rank.to_f - elo_rank.to_f).abs
           expected  = 1 / (1 + 10 ** (diff / 400))
           send_opts = {one_way: true}
+
+          if opts[:result] == :win 
+            points = 1
+            send_opts.merge!(:result => :lose)
+          elsif opts[:result] == :lose
+            points = 0
+            send_opts.merge!(:result => :win)
+          elsif opts[:result] == :draw
+            points = 0.5
+            send_opts.merge!(:result => :draw)
+          end
           
           if self.class.respond_to?(:acts_as_elo_options) && self.class.acts_as_elo_options[:sender]
             send_opts.merge!(source: self) 
           end
           
-          source.elo_win!(send_opts) unless opts[:one_way]
+          source.elo_update(send_opts) unless opts[:one_way]
 
-          @elo_rank = (elo_rank + 10*(0-expected)).round          
+          @elo_rank = (elo_rank + 10*(points-expected)).round          
         rescue Exception => e
           puts "Exception: #{e.message}"
         end
