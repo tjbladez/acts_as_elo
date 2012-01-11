@@ -4,17 +4,12 @@ require Pathname.new('.') + 'helper'
 class Player
   include Acts::Elo
   
-  attr_accessor :elo_opponent
   acts_as_elo
 end
 
 
 context "Two players are opponents of each other" do
   setup { [Player.new, Player.new] }
-  hookup do 
-    topic.first.elo_opponent = topic.last
-    topic.last.elo_opponent  = topic.first
-  end
   
   asserts("default ranks are 1200") {
     topic.map(&:elo_rank)
@@ -22,17 +17,25 @@ context "Two players are opponents of each other" do
 
   context "when first one wins" do
     hookup {topic.each {|pl| pl.elo_rank = 1200 }}
-    hookup {topic.first.elo_win!}
+    hookup {topic.first.elo_win!(topic.last)}
     
     asserts("ranks are updated") {topic.map(&:elo_rank)}.equals([1205, 1195])
   end
 
-  context "when first one wins" do
+  context "when first one loses" do
     hookup {topic.each {|pl| pl.elo_rank = 1200 }}    
-    hookup {topic.first.elo_lose!}
+    hookup {topic.first.elo_lose!(topic.last)}
     
     asserts("ranks are updated") {topic.map(&:elo_rank)}.equals([1195, 1205])
   end
+
+  context "when they draw" do
+    hookup {topic.each {|pl| pl.elo_rank = 1200 }}    
+    hookup {topic.first.elo_draw!(topic.last)}
+    
+    asserts("ranks are updated") {topic.map(&:elo_rank)}.equals([1200, 1200])
+  end
+
 end
 
 class PlayerWithDefaultRank
@@ -46,33 +49,3 @@ context "Testing default for elo rank" do
 end
 
 
-class PlayerWithEnemy
-  include Acts::Elo
-  
-  attr_accessor :enemy
-  acts_as_elo :method => :enemy
-end
-
-context "Two players with custom method to get elo opponent" do
-  setup { [PlayerWithEnemy.new, PlayerWithEnemy.new] }
-  hookup do 
-    topic.first.enemy = topic.last
-    topic.last.enemy  = topic.first
-  end
-  
-  asserts("default ranks are 1200") {topic.map(&:elo_rank)}.equals([1200, 1200])
-
-  context "when first one wins" do
-    hookup {topic.each {|pl| pl.elo_rank = 1200 }}
-    hookup {topic.first.elo_win!}
-    
-    asserts("ranks are updated") {topic.map(&:elo_rank)}.equals([1205, 1195])
-  end
-
-  context "when first one wins" do
-    hookup {topic.each {|pl| pl.elo_rank = 1200 }}    
-    hookup {topic.first.elo_lose!}
-    
-    asserts("ranks are updated") {topic.map(&:elo_rank)}.equals([1195, 1205])
-  end
-end

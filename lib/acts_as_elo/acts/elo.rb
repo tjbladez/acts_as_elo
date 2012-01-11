@@ -21,12 +21,6 @@ module Acts
           define_method(:elo_rank) do
             @elo_rank ||= default_rank
           end
-          
-          if opts[:method] && !methods.include?(:elo_opponent)
-            define_method(:elo_opponent) do
-              send(opts[:method].to_sym)
-            end
-          end
         end
 
         include Acts::Elo::InstanceMethods unless self.included_modules.include?(Acts::Elo::InstanceMethods)        
@@ -34,41 +28,40 @@ module Acts
     end   
     
     module InstanceMethods
-      def elo_win!(opts={})
-        elo_update(opts.merge!(:result => :win))
+      def elo_win!(opponent, opts={})
+        elo_update(opponent, opts.merge!(:result => :win))
       end
       
-      def elo_lose!(opts={})
-        elo_update(opts.merge!(:result => :lose))
+      def elo_lose!(opponent, opts={})
+        elo_update(opponent, opts.merge!(:result => :lose))
       end
       
-      def elo_draw!(opts={})
-        elo_update(opts.merge!(:result => :draw))
+      def elo_draw!(opponent, opts={})
+        elo_update(opponent, opts.merge!(:result => :draw))
       end
       
-      def elo_update(opts={})
+      def elo_update(opponent, opts={})
         begin
-          source    = opts[:source] || elo_opponent
-          diff      = (source.elo_rank.to_f - elo_rank.to_f).abs
+          if self.class.respond_to?(:acts_as_elo_options) && self.class.acts_as_elo_options[:one_way]
+            one_way = true
+          end
+          one_way   ||= opts[:one_way]
+          diff      = (opponent.elo_rank.to_f - elo_rank.to_f).abs
           expected  = 1 / (1 + 10 ** (diff / 400))
           send_opts = {one_way: true}
 
           if opts[:result] == :win 
             points = 1
-            send_opts.merge!(:result => :lose)
+            send_opts.merge!(result: :lose)
           elsif opts[:result] == :lose
             points = 0
-            send_opts.merge!(:result => :win)
+            send_opts.merge!(result: :win)
           elsif opts[:result] == :draw
             points = 0.5
-            send_opts.merge!(:result => :draw)
+            send_opts.merge!(result: :draw)
           end
-          
-          if self.class.respond_to?(:acts_as_elo_options) && self.class.acts_as_elo_options[:sender]
-            send_opts.merge!(source: self) 
-          end
-          
-          source.elo_update(send_opts) unless opts[:one_way]
+                    
+          opponent.elo_update(self, send_opts) unless one_way
 
           @elo_rank = (elo_rank + 10*(points-expected)).round          
         rescue Exception => e
