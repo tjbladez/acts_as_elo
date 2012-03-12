@@ -54,30 +54,30 @@ class IntermediatePlayer
   acts_as_elo :default_rank => 2000
 end
 
-context "Professional playing against the intermediate player" do
+context "Professional player is playing against the intermediate player" do
   setup { [ProfessionalPlayer.new, IntermediatePlayer.new] }
 
-  asserts("default ranks are 2500 and 1200") {
+  asserts("default ranks are 2400 and 2000") {
     topic.map(&:elo_rank)
   }.equals([2400, 2000])
 
-  context "when professional wins" do
+  context "when the professional wins" do
     hookup {topic.first.elo_rank = 2400}
     hookup {topic.last.elo_rank = 2000}
 
     hookup {topic.first.elo_win!(topic.last)}
 
-    asserts("professional is barely rewarded") {topic.first.elo_rank}.equals(2401)
-    asserts("intermediate barely loses rank") {topic.last.elo_rank}.equals(1999)
+    asserts("the professional is barely rewarded") {topic.first.elo_rank}.equals(2401)
+    asserts("the intermediate barely loses rank") {topic.last.elo_rank}.equals(1999)
   end
-  context "when intermediate player wins" do
+  context "when the intermediate player wins" do
     hookup {topic.first.elo_rank = 2400}
     hookup {topic.last.elo_rank = 2000}
 
     hookup {topic.last.elo_win!(topic.first)}
 
-    asserts("professional loses some rank") {topic.first.elo_rank}.equals(2391)
-    asserts("intermediate rewarded greatly") {topic.last.elo_rank}.equals(2014)
+    asserts("the professional loses some rank") {topic.first.elo_rank}.equals(2391)
+    asserts("the intermediate rewarded greatly") {topic.last.elo_rank}.equals(2014)
   end
 end
 
