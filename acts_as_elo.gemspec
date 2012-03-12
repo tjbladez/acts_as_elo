@@ -2,7 +2,7 @@
 $:.push File.expand_path('../lib', __FILE__)
 Gem::Specification.new do |s|
   s.name        = 'acts_as_elo'
-  s.version     = '0.2.0'
+  s.version     = '1.0.0'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['tjbladez']
   s.email       = ['nick@tjbladez.net']
