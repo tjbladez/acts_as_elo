@@ -29,6 +29,6 @@ bob.elo_rank # => 1200
 jack.elo_rank # => 1200
 
 bob.elo_win!(jack)
-bob.elo_rank # => 1205
-jack.elo_rank # => 1995
+bob.elo_rank # => 1215
+jack.elo_rank # => 1985
 ```
