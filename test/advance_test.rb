@@ -31,15 +31,55 @@ context "User with many questions" do
     hookup { topic.questions.each {|q| q.elo_rank = 1200 }}
     hookup { topic.questions.first.elo_lose!(topic)}
 
-    asserts(:elo_rank).equals(1205)
-    asserts("questions have their ranks updated"){ topic.questions.map(&:elo_rank)}.equals([1195, 1200])
+    asserts(:elo_rank).equals(1215)
+    asserts("questions have their ranks updated"){ topic.questions.map(&:elo_rank)}.equals([1185, 1200])
   end
 
   context "when question is answered incorrectly" do
     hookup { topic.questions.each {|q| q.elo_rank = 1200 }}
     hookup { topic.questions.first.elo_win!(topic) }
 
-    asserts(:elo_rank).equals(1195)
-    asserts("questions have their ranks updated"){ topic.questions.map(&:elo_rank)}.equals([1205, 1200])
+    asserts(:elo_rank).equals(1185)
+    asserts("questions have their ranks updated"){ topic.questions.map(&:elo_rank)}.equals([1215, 1200])
   end
 end
+
+class ProfessionalPlayer
+  include Acts::Elo
+  acts_as_elo :default_rank => 2400
+end
+
+class IntermediatePlayer
+  include Acts::Elo
+  acts_as_elo :default_rank => 2000
+end
+
+context "Professional playing against the intermediate player" do
+  setup { [ProfessionalPlayer.new, IntermediatePlayer.new] }
+
+  asserts("default ranks are 2500 and 1200") {
+    topic.map(&:elo_rank)
+  }.equals([2400, 2000])
+
+  context "when professional wins" do
+    hookup {topic.first.elo_rank = 2400}
+    hookup {topic.last.elo_rank = 2000}
+
+    hookup {topic.first.elo_win!(topic.last)}
+
+    asserts("professional is barely rewarded") {topic.first.elo_rank}.equals(2401)
+    asserts("intermediate barely loses rank") {topic.last.elo_rank}.equals(1999)
+  end
+  context "when intermediate player wins" do
+    hookup {topic.first.elo_rank = 2400}
+    hookup {topic.last.elo_rank = 2000}
+
+    hookup {topic.last.elo_win!(topic.first)}
+
+    asserts("professional loses some rank") {topic.first.elo_rank}.equals(2391)
+    asserts("intermediate rewarded greatly") {topic.last.elo_rank}.equals(2014)
+  end
+end
+
+
+
