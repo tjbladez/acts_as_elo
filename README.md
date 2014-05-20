@@ -32,3 +32,9 @@ bob.elo_win!(jack)
 bob.elo_rank # => 1215
 jack.elo_rank # => 1985
 ```
+
+### License
+
+Released under the MIT License. See the [LICENSE][license] file for further details.
+
+[license]: https://github.com/tjbladez/acts_as_elo/blob/master/LICENSE

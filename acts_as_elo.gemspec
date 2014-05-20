@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   # Dependencies (installed via 'bundle install')...
-  s.add_development_dependency("bundler", ["~> 1.0.0"])
-  s.add_development_dependency("riot")
+  s.add_dependency('yajl-ruby', '>= 0.1')
+  s.add_development_dependency("bundler", ["~> 1.6.0"])
+  s.add_development_dependency("rspec")
 end
